@@ -6,8 +6,14 @@ defmodule RadarDetect.RadarTest do
   describe "matrices" do
     alias RadarDetect.Radar.Matrix
 
-    @valid_attrs %{height: 42, width: 42}
-    @invalid_attrs %{height: nil, width: nil}
+    @valid_attrs %{
+                    x_axis_size: 6,
+                    input: "5,5,6,7,8,9,3,3,4,5,6,0"
+                  }
+    @invalid_attrs %{
+                     x_axis_size: 0,
+                     input: ""
+                     }
 
     def matrix_fixture(attrs \\ %{}) do
       {:ok, matrix} =
@@ -20,12 +26,12 @@ defmodule RadarDetect.RadarTest do
 
     test "create_matrix/1 with valid data creates a matrix" do
       assert {:ok, %Matrix{} = matrix} = Radar.create_matrix(@valid_attrs)
-      assert matrix.height == 42
-      assert matrix.width == 42
+      assert matrix.height == 2
+      assert matrix.width == 6
     end
 
     test "create_matrix/1 with invalid data returns error changeset" do
-      assert {:error, %Ecto.Changeset{}} = Radar.create_matrix(@invalid_attrs)
+      assert {:error, _any} = Radar.create_matrix(@invalid_attrs)
     end
   end
 end

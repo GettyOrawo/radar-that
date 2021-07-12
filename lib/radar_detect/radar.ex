@@ -10,10 +10,29 @@ defmodule RadarDetect.Radar do
    alias RadarDetect.Radar.Quadrant
 
   @doc """
+  receives raw request input and creates a valid matrix with quadrants
+  """
+
+  def create_matrix(%{x_axis_size: x_axis_size, input: input}) when x_axis_size > 0 do
+    height = string_to_list_of_ints(input) |> length() |> div(x_axis_size)
+    {:ok, matrix} = load_matrix(%{height: height, width: x_axis_size})
+
+    input
+    |> string_to_list_of_ints()
+    |> load_quadrants(matrix)
+
+    {:ok, matrix}
+  end
+
+  def create_matrix(%{x_axis_size: x_axis_size}) do
+    {:error, "invalid input type"}
+  end
+
+  @doc """
   Deletes an existing matrix if already exists and creates a new matrix.
   """
 
-  def create_matrix(attrs \\ %{}) do
+  def load_matrix(attrs \\ %{}) do
     case Repo.one(Matrix) do
       nil -> new_matrix(attrs)
       matrix -> 
@@ -27,10 +46,10 @@ defmodule RadarDetect.Radar do
 
   ## Examples
 
-      iex> create_matrix(%{field: value})
+      iex> new_matrix(%{field: value})
       {:ok, %Matrix{}}
 
-      iex> create_matrix(%{field: bad_value})
+      iex> new_matrix(%{field: bad_value})
       {:error, %Ecto.Changeset{}}
 
   """
@@ -39,20 +58,6 @@ defmodule RadarDetect.Radar do
     %Matrix{}
     |> Matrix.changeset(attrs)
     |> Repo.insert()
-  end
-
-  @doc """
-  receives raw request input and creates a valid matrix with quadrants
-  """
-
-  def load_matrix(%{x_axis_size: x_axis_size, input: input}) do
-    height = string_to_list_of_ints(input) |> length() |> div(x_axis_size)
-
-    {:ok, matrix} = create_matrix(%{height: height, width: x_axis_size})
-
-    input
-    |> string_to_list_of_ints()
-    |> load_quadrants(matrix)
   end
 
   @doc """

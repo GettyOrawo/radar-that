@@ -6,12 +6,16 @@ defmodule RadarDetectWeb.MatrixController do
 
   action_fallback RadarDetectWeb.FallbackController
 
-  def create(conn, %{"matrix" => matrix_params}) do
-    with {:ok, %Matrix{} = matrix} <- Radar.create_matrix(matrix_params) do
+  def create(conn, matrix_params) do
+    params = matrix_params |> Map.new(fn {k, v} -> {String.to_atom(k), v} end)
+    with {:ok, matrix} <- Radar.create_matrix(params) do
       conn
-      |> put_status(:created)
-      |> put_resp_header("location", Routes.matrix_path(conn, :show, matrix))
-      |> render("show.json", matrix: matrix)
+      |> put_status(:ok)
+      |> render("matrix.json", matrix: matrix)
+    else
+      {:error, _any} -> conn
+      |> put_status(:unprocessable_entity)
+      |> render("422.json")
     end
   end
 end

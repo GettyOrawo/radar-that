@@ -9,5 +9,5 @@ defmodule RadarDetectWeb.Router do
     pipe_through :api
   end
 
-  resources "/matrices", RadarDetectWeb.MatrixController, except: [:new, :edit]
+  post "/api/radar", RadarDetectWeb.MatrixController, :create
 end
