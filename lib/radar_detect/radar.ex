@@ -65,10 +65,10 @@ defmodule RadarDetect.Radar do
   """
 
   def load_quadrants(input, matrix) do
-    quadrants = input |> traverse({0,0}, matrix, [])
-    Quadrant
-    |> Repo.insert_all(quadrants)
-
+    input 
+    |> traverse({0,0}, matrix, [])
+    |> Flow.from_enumerable()
+    |> Flow.map(fn q -> Quadrant |> Repo.insert(q) end)
   end
 
   @doc """

@@ -41,7 +41,8 @@ defmodule RadarDetect.MixProject do
       {:telemetry_poller, "~> 0.4"},
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.0"},
-      {:matrex, "~> 0.6"}
+      {:matrex, "~> 0.6"},
+      {:flow, "~> 1.0"}
     ]
   end
 
