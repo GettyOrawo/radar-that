@@ -10,7 +10,20 @@ defmodule RadarDetect.Radar do
    alias RadarDetect.Radar.Quadrant
 
   @doc """
-  Creates a matrix.
+  Deletes an existing matrix if already exists and creates a new matrix.
+  """
+
+  def create_matrix(attrs \\ %{}) do
+    case Repo.one(Matrix) do
+      nil -> new_matrix(attrs)
+      matrix -> 
+        Repo.delete(matrix)
+        new_matrix(attrs)
+    end      
+   end
+
+  @doc """
+  Insert's a new matrix to the database
 
   ## Examples
 
@@ -21,28 +34,43 @@ defmodule RadarDetect.Radar do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_matrix(attrs \\ %{}) do
+  def new_matrix(attrs) do
+
     %Matrix{}
     |> Matrix.changeset(attrs)
     |> Repo.insert()
   end
 
+  @doc """
+  receives raw request input and creates a valid matrix with quadrants
+  """
+
   def load_matrix(%{x_axis_size: x_axis_size, input: input}) do
-    # {"x_axis_size": 6, "input": "5,5,6,7,8,9,3,3,4,5,6,0"}
     height = string_to_list_of_ints(input) |> length() |> div(x_axis_size)
 
     {:ok, matrix} = create_matrix(%{height: height, width: x_axis_size})
-    hii = load_quadrants(matrix, string_to_list_of_ints(input))
+
+    input
+    |> string_to_list_of_ints()
+    |> load_quadrants(matrix)
+  end
+
+  @doc """
+  creates all quadrants with their specified locations on the given matrix
+  """
+
+  def load_quadrants(input, matrix) do
+    quadrants = input |> traverse({0,0}, matrix, [])
     Quadrant
-    |> Repo.insert_all(hii)
-    
+    |> Repo.insert_all(quadrants)
+
   end
 
-  def load_quadrants(matrix, input) do
-    traverse(input, {0,0}, matrix, [])
-  end
+  @doc """
+  Builds a list of valid quadrants from the given input and attaches the quadrants to the relevant matrix
+  """
 
-  def traverse([], {_x,y}, %{height: height}, acc) do
+  def traverse([], _point, _matrix, acc) do
     acc
   end  
 
@@ -51,7 +79,6 @@ defmodule RadarDetect.Radar do
     new_point = right({x,y})
     traverse(t, new_point, matrix, new_acc)
   end
-
 
   def traverse(input, {x,y}, %{height: height, width: width} = matrix, acc) when x >= width do
     new_point = down({0,y})
