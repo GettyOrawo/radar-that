@@ -9,8 +9,6 @@ defmodule RadarDetect.Radar.Quadrant do
     field :y_axis, :integer
     field :value, :integer
     field :matrix_id, :binary_id
-
-    timestamps()
   end
 
   @doc false
