@@ -5,8 +5,7 @@ defmodule RadarDetect.Radar.Quadrant do
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
   schema "quadrants" do
-    field :x_axis, :integer
-    field :y_axis, :integer
+    field :location, :map
     field :value, :integer
     field :matrix_id, :binary_id
   end
@@ -14,7 +13,7 @@ defmodule RadarDetect.Radar.Quadrant do
   @doc false
   def changeset(quadrant, attrs) do
     quadrant
-    |> cast(attrs, [:x_axis, :y_axis, :value])
-    |> validate_required([:x_axis, :y_axis, :value])
+    |> cast(attrs, [:location, :value])
+    |> validate_required([:location, :value])
   end
 end

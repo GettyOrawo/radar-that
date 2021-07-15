@@ -24,7 +24,7 @@ defmodule RadarDetect.Radar do
     {:ok, matrix}
   end
 
-  def create_matrix(%{x_axis_size: x_axis_size}) do
+  def create_matrix(_attrs) do
     {:error, "invalid input type"}
   end
 
@@ -61,6 +61,25 @@ defmodule RadarDetect.Radar do
   end
 
   @doc """
+  Insert's a new quadrant to the database
+
+  ## Examples
+
+      iex> new_quadrant(%{field: value})
+      {:ok, %Quadrant{}}
+
+      iex> new_quadrant(%{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def new_quadrant(attrs) do
+
+    %Quadrant{}
+      |> Quadrant.changeset(attrs)
+      |> Repo.insert() 
+  end
+
+  @doc """
   creates all quadrants with their specified locations on the given matrix
   """
 
@@ -68,7 +87,11 @@ defmodule RadarDetect.Radar do
     input 
     |> traverse({0,0}, matrix, [])
     |> Flow.from_enumerable()
-    |> Flow.map(fn q -> Quadrant |> Repo.insert(q) end)
+    |> Flow.partition()
+    |> Flow.map(fn q -> 
+      new_quadrant(q)
+    end)
+    |> Flow.run()
   end
 
   @doc """
@@ -80,7 +103,7 @@ defmodule RadarDetect.Radar do
   end  
 
   def traverse([h|t], {x,y}, %{width: width, id: id} = matrix, acc) when x < width do
-    new_acc = List.insert_at(acc, 0, %{x_axis: x, y_axis: y, value: h, matrix_id: id})
+    new_acc = List.insert_at(acc, 0, %{location: %{x_axis: x, y_axis: y}, value: h, matrix_id: id})
     new_point = right({x,y})
     traverse(t, new_point, matrix, new_acc)
   end
