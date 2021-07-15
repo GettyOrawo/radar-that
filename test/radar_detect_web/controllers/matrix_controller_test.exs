@@ -35,8 +35,9 @@ defmodule RadarDetectWeb.MatrixControllerTest do
 
   describe "get tie fighters sorrounding a quadrant" do
     test "renders number of fighters", %{conn: conn} do
-      conn = post(conn, Routes.matrix_path(conn, :tie_fighters), %{x: 0, y: 0})
-      assert %{total: 16, x: 0, y: 0} = json_response(conn, 200)
+      fixture(:matrix)
+      conn = get(conn, Routes.quadrant_path(conn, :fetch_fighters, 0, 0))
+      assert %{"total" => 16, "x" => 0, "y" => 0} = json_response(conn, 200)
     end
   end
 

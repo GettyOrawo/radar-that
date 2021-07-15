@@ -22,6 +22,8 @@ defmodule RadarDetect.Radar do
     |> load_quadrants(matrix)
 
     {:ok, matrix}
+    
+
   end
 
   def create_matrix(_attrs) do
@@ -73,7 +75,6 @@ defmodule RadarDetect.Radar do
 
   """
   def new_quadrant(attrs) do
-
     %Quadrant{}
       |> Quadrant.changeset(attrs)
       |> Repo.insert() 
@@ -121,13 +122,83 @@ defmodule RadarDetect.Radar do
     {x+1, y}
   end
 
+  defp left({x,y}) do
+    {x-1, y}
+  end
+
   defp down({x,y}) do
     {x, y+1}
+  end
+
+  defp up({x,y}) do
+    {x, y-1}
   end
 
   defp string_to_list_of_ints(str) do
     str
     |> String.split(",") 
     |> Enum.map(fn n -> Integer.parse(n) |> elem(0) end)
+  end
+
+  @doc """
+  given the location of one quadrant, finds the location of all its sorrounding quadrants
+  """
+
+  def sorrounding_quadrants_location(x,y) do
+    IO.inspect {x,y}
+    new_acc = [%{x_axis: x-1, y_axis: y-1}, %{x_axis: x, y_axis: y}]
+    radar_around(new_acc, {x-1, y-1})
+  end
+
+  @doc """
+  goes round the quadrant fetching sorounding quadrant location coordinates
+  """
+
+  def radar_around(acc, point) when length(acc) < 4 do
+    {x,y} = right(point)
+    acc
+    |> List.insert_at(0, %{x_axis: x, y_axis: y})
+    |> radar_around({x,y})
+  end
+
+  def radar_around(acc, point) when length(acc) < 6 do
+    {x,y} = down(point)
+    acc
+    |> List.insert_at(0, %{x_axis: x, y_axis: y})
+    |> radar_around({x,y})
+  end
+
+  def radar_around(acc, point) when length(acc) < 8 do
+    {x,y} = left(point)
+    acc
+    |> List.insert_at(0, %{x_axis: x, y_axis: y})
+    |> radar_around({x,y})
+  end
+
+  def radar_around(acc, point) when length(acc) >= 8 do
+    {x,y} = up(point)
+    acc |> List.insert_at(0, %{x_axis: x, y_axis: y})
+  end
+
+  @doc """
+  query for only the existing and valid quadrants with the given sorrounding quadrant locations
+  """
+
+  def tie_fighters_around(x,y) do
+    tie_fighters = sorrounding_quadrants_location(x,y)
+    recording_query =
+      from(
+        q in Quadrant,
+        where: q.location in ^tie_fighters,
+        select: sum(q.value)
+      )
+    recording_query |> Repo.all() |> List.first()
+  end
+
+  def quadrant_exists(x,y) do
+    case Repo.get_by(Quadrant, location: %{x_axis: x, y_axis: y}) do
+      nil -> {:error, :unprocessable_entity}
+      quadrant -> {:ok, quadrant}
+    end
   end
 end
