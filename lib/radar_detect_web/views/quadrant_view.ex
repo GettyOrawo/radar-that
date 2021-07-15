@@ -2,8 +2,12 @@ defmodule RadarDetectWeb.QuadrantView do
   use RadarDetectWeb, :view
   alias RadarDetectWeb.QuadrantView
 
-  def render("quadrant.json", %{fighters: fighters, location: %{"x_axis" => x, "y_axis" => y}}) do
-    %{total: fighters, x: x, y: y}
+  def render("quadrant.json", %{fighters: fighters}) do
+    fighters
+  end
+
+  def render("sorted_quadrants.json", %{quadrants: quadrants}) do
+    quadrants
   end
 
   def render("422.json", _assigns) do

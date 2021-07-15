@@ -145,7 +145,6 @@ defmodule RadarDetect.Radar do
   """
 
   def sorrounding_quadrants_location(x,y) do
-    IO.inspect {x,y}
     new_acc = [%{x_axis: x-1, y_axis: y-1}, %{x_axis: x, y_axis: y}]
     radar_around(new_acc, {x-1, y-1})
   end
@@ -181,7 +180,7 @@ defmodule RadarDetect.Radar do
   end
 
   @doc """
-  query for only the existing and valid quadrants with the given sorrounding quadrant locations
+  query for only the existing and valid quadrants with the given sorrounding quadrant locations returns the total number of fightes and coordinates on=f the quadrant
   """
 
   def tie_fighters_around(x,y) do
@@ -192,9 +191,34 @@ defmodule RadarDetect.Radar do
         where: q.location in ^tie_fighters,
         select: sum(q.value)
       )
-    recording_query |> Repo.all() |> List.first()
+    no_of_fighters = recording_query |> Repo.all() |> List.first()
+
+    %{total: no_of_fighters, x: x, y: y}
   end
 
+  @doc """
+  Sorts all the available quadrants by the number of tie fighters and limits the output to the given limit(if any)
+  """
+
+  def sort_by_fighters(limit \\ false) do
+    all_quadrants = Repo.all(Quadrant)
+
+    limit = if limit, do: limit, else: length(all_quadrants)
+
+    all_quadrants
+    |> Flow.from_enumerable()
+    |> Flow.partition()
+    |> Flow.map(fn q -> 
+        %{"x_axis" => x, "y_axis" => y} = q.location
+        tie_fighters_around(x,y)
+      end)
+    |> Enum.sort_by(& {&1[:total], &1[:x], &1[:y]}, :desc)
+    |> Enum.take(limit)
+  end
+
+  @doc """
+  checks if a quadrant exists based on its coordinates
+  """
   def quadrant_exists(x,y) do
     case Repo.get_by(Quadrant, location: %{x_axis: x, y_axis: y}) do
       nil -> {:error, :unprocessable_entity}

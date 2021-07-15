@@ -12,4 +12,6 @@ defmodule RadarDetectWeb.Router do
   post "/api/radar", RadarDetectWeb.MatrixController, :create
 
   get "/api/radar/:x/:y", RadarDetectWeb.QuadrantController, :fetch_fighters
+
+  get "/api/radar", RadarDetectWeb.QuadrantController, :sort_quadrants
 end
