@@ -61,7 +61,33 @@ defmodule RadarDetect.RadarTest do
     test "tie_fighters_around/2 returns sum of all tie fighters in the sorrounding quadrants given a quadrant coordinates" do
       assert {:ok, %Matrix{} = _matrix} = Radar.create_matrix(@valid_attrs)
       fighters = Radar.tie_fighters_around(1,1)
-      assert fighters == 26
+      assert fighters == %{total: 26, x: 1, y: 1}
     end    
+
+    test "sort_by_fighters/1 sorts all the available quadrants by TIE fighters" do
+      assert {:ok, %Matrix{} = _matrix} = Radar.create_matrix(@valid_attrs)
+      quadrants = Radar.sort_by_fighters()
+      assert quadrants == [
+                            %{total: 36, x: 3, y: 1},
+                            %{total: 36, x: 3, y: 0},
+                            %{total: 35, x: 4, y: 1},
+                            %{total: 35, x: 4, y: 0},
+                            %{total: 30, x: 2, y: 1},
+                            %{total: 30, x: 2, y: 0},
+                            %{total: 26, x: 1, y: 1},
+                            %{total: 26, x: 1, y: 0},
+                            %{total: 23, x: 5, y: 1},
+                            %{total: 23, x: 5, y: 0},
+                            %{total: 16, x: 0, y: 1},
+                            %{total: 16, x: 0, y: 0}
+                          ]
+    end  
+
+    test "sort_by_fighters/1 sorts all the available quadrants and limits output by the given limit" do
+      assert {:ok, %Matrix{} = _matrix} = Radar.create_matrix(@valid_attrs)
+      quadrants = Radar.sort_by_fighters(4)
+      assert quadrants == [%{total: 36, x: 3, y: 1}, %{total: 36, x: 3, y: 0}, %{total: 35, x: 4, y: 1}, %{total: 35, x: 4, y: 0}]
+    end  
+
   end
 end
