@@ -212,7 +212,7 @@ defmodule RadarDetect.Radar do
         %{"x_axis" => x, "y_axis" => y} = q.location
         tie_fighters_around(x,y)
       end)
-    |> Enum.sort_by(& {&1[:total], &1[:x], &1[:y]}, :desc)
+    |> Enum.sort_by(& {&1[:total], &1[:y], &1[:x]}, :desc)
     |> Enum.take(limit)
   end
 
